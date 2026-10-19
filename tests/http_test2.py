@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+"""
+اختبارات المرحلة الثانية: الإشعارات المجدولة، تذكيرات واتساب اليدوية (موافقة المالك)، المستندات القابلة للطباعة، الصلاحيات، الترحيل.
+يتطلب قاعدة فارغة (schema.sql) وخادم PHP على نفس القاعدة (SAKAN_DB_NAME) :
+    python3 tests/http_test2.py http://127.0.0.1:8081/sakan_property_manager sakan_http
+"""
+import sys, re, os, subprocess, datetime, urllib.parse, requests
+BASE = (sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8081/sakan_property_manager').rstrip('/')
+DB = sys.argv[2] if len(sys.argv) > 2 else 'sakan_http'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+passed = failed = 0
+def t(name, cond, extra=''):
+    global passed, failed
+    if cond: passed += 1; print('  [PASS]', name)
+    else: failed += 1; print('  [FAIL]', name, extra)
+def sql(q):
+    r = subprocess.run(['mysql', '-uroot', DB, '-N', '-B', '-e', q], capture_output=True, text=True)
+    if r.returncode: raise RuntimeError(r.stderr)
+    return r.stdout.strip()
+def cron():
+    r = subprocess.run(['php', ROOT + '/cron/run.php'], capture_output=True, text=True, env=dict(os.environ, SAKAN_DB_NAME=DB)); return r.stdout + r.stderr
+class C:
+    def __init__(self): self.s = requests.Session()
+    def get(self, p, follow=False): return self.s.get(BASE + '/' + p.lstrip('/'), allow_redirects=follow)
+    def token(self, p='dashboard/'):
+        r = self.s.get(BASE + '/' + p, allow_redirects=True)
+        m = re.search(r'name="_csrf" value="([a-f0-9]+)"', r.text); return m.group(1) if m else ''
+    def post(self, p, data, tokpage=None, follow=False):
+        d = dict(data)
+        if '_csrf' not in d: d['_csrf'] = self.token(tokpage or p)
+        return self.s.post(BASE + '/' + p.lstrip('/'), data=d, allow_redirects=follow)
+def idem(c, page): return re.search(r'name="_idem" value="([a-f0-9]+)"', c.s.get(BASE + '/' + page).text).group(1)
+def newid(r): return int(re.search(r'id=(\d+)', r.headers['Location']).group(1))
+today = datetime.date.today()
+D = lambda d: d.strftime('%Y-%m-%d')
+
+adm = C()
+print('== تهيئة ==')
+r = adm.post('setup/', {'full_name': 'المالك', 'username': 'owner', 'password': 'Owner12345', 'password2': 'Owner12345', 'org_name': 'مؤسسة الاختبار'}, 'setup/')
+t('إنشاء المدير', r.status_code == 302)
+r = adm.post('properties/form.php', {'name': 'مبنى الاختبار', 'code': 'T1', 'city': 'الخرطوم'}, 'properties/form.php'); pid = newid(r)
+uids = []
+for n in ['U1', 'U2', 'U3', 'U4']:
+    r = adm.post('units/form.php', {'property_id': pid, 'unit_no': n, 'base_rent': '1000', 'status': 'vacant'}, 'units/form.php'); uids.append(newid(r))
+r = adm.post('tenants/form.php', {'full_name': 'أحمد علي', 'phone': '0912345678', 'status': 'active'}, 'tenants/form.php'); tid = newid(r)
+def mk_contract(unit, start, end, due_day='1', tenant=None):
+    r = adm.post('contracts/form.php', {'tenant_id': tenant or tid, 'unit_id': unit, 'start_date': D(start), 'end_date': D(end), 'rent_amount': '1000', 'period': 'monthly', 'deposit_amount': '0', 'due_day': due_day, 'activate_now': '1'}, 'contracts/form.php')
+    return newid(r) if r.status_code == 302 else None
+y = today.year
+c1 = mk_contract(uids[0], datetime.date(y, 1, 1), datetime.date(y, 12, 31))
+t('عقد 1 (استحقاقات متأخرة)', c1 is not None)
+c2 = mk_contract(uids[1], today, today + datetime.timedelta(days=364), str(today.day))
+t('عقد 2 (استحقاق يحل اليوم)', c2 is not None)
+c3 = mk_contract(uids[2], today - datetime.timedelta(days=150), today + datetime.timedelta(days=15))
+t('عقد 3 (ينتهي خلال 15 يوماً)', c3 is not None)
+c4 = mk_contract(uids[3], today - datetime.timedelta(days=200), today - datetime.timedelta(days=5), tenant=tid)
+t('عقد 4 (انتهى منذ 5 أيام)', c4 is not None, 'تعذّر إنشاؤه')
+r = adm.post('maintenance/form.php', {'property_id': pid, 'unit_id': uids[0], 'title': 'عطل قديم', 'priority': 'medium', 'reported_on': D(today - datetime.timedelta(days=30)), 'estimated_cost': '0', 'tenant_id': tid}, 'maintenance/form.php'); mid = newid(r)
+
+print('== الإشعارات المجدولة ==')
+out = cron(); t('تشغيل cron ينجح', 'تم:' in out, out)
+n1 = int(sql("select count(*) from notifications"))
+out2 = cron(); n2 = int(sql("select count(*) from notifications"))
+t('تكرار التشغيل لا يكرّر الإشعارات', n1 == n2 and n1 > 0, f'{n1} -> {n2}')
+cnt = lambda ty: int(sql(f"select count(*) from notifications where type='{ty}'"))
+overdue_n = int(sql("select count(*) from installments where status='overdue' and remaining>0"))
+t('إشعار متأخر لكل استحقاق متأخر فقط', cnt('rent_overdue') == overdue_n and overdue_n >= 10, f'{cnt("rent_overdue")} vs {overdue_n}')
+t('لا إشعار متأخر لاستحقاق لم يحل موعده', int(sql("select count(*) from notifications n join installments i on n.link=concat('payments/view.php?id=',i.id) where n.type='rent_overdue' and i.due_date>=curdate()")) == 0)
+t('إشعار «حلّ الموعد اليوم»', cnt('rent_today') >= 1)
+t('إشعار قرب انتهاء عقد', cnt('contract_end') >= 1)
+t('إشعار عقد انتهى', cnt('contract_expired') >= 1 and sql(f"select status from contracts where id={c4}") == 'expired', sql(f"select status from contracts where id={c4}"))
+t('إشعار صيانة متأخرة', cnt('maint_overdue') == 1)
+t('إشعار بلاغ صيانة جديد', cnt('maint_new') == 1)
+# دفعة جزئية على استحقاق مستقبلي
+nxt = sql(f"select id from installments where contract_id={c1} and due_date>curdate() order by due_date limit 1")
+r = adm.post('payments/collect.php', {'installment_id': nxt, 'amount': '300', 'paid_on': D(today), 'method_id': '1', '_idem': 'c' * 32}, f'payments/view.php?id={nxt}')
+t('دفعة جزئية على استحقاق مستقبلي', r.status_code == 302)
+t('إشعار تحصيل عند تسجيل الدفعة', cnt('payment') == 1)
+t('حالة الاستحقاق partial وليس overdue قبل موعده', sql(f"select status from installments where id={nxt}") == 'partial')
+cron(); t('إشعار «دفعة جزئية» مرة واحدة', cnt('rent_partial') == 1)
+cron(); t('لا يتكرر مع كل فحص', cnt('rent_partial') == 1)
+# سداد كامل لاستحقاق متأخر → معالجة تلقائية
+od = sql(f"select id from installments where contract_id={c1} and status='overdue' order by due_date limit 1")
+r = adm.post('payments/collect.php', {'installment_id': od, 'amount': '1000', 'paid_on': D(today), 'method_id': '1', '_idem': 'd' * 32}, f'payments/view.php?id={od}')
+cron()
+t('الإشعار يُعالج تلقائياً بعد السداد الكامل', sql(f"select count(*) from notifications where link='payments/view.php?id={od}' and type='rent_overdue' and handled_at is not null") == '1')
+t('الاستحقاق المسدد لا يظهر كمتأخر', sql(f"select status from installments where id={od}") == 'paid')
+r = adm.get('notifications/'); t('صفحة الإشعارات تعرض أنواعاً جديدة وأزرار الإجراء', r.status_code == 200 and 'مراجعة وإرسال تذكير' in r.text and 'تمت المعالجة' in r.text)
+r = adm.get('notifications/?show=handled'); t('عرض «المعالجة»', r.status_code == 200 and 'معالج' in r.text)
+r = adm.get('dashboard/'); t('الجرس يعرض العدد غير المقروء', 'class="dot"' in r.text)
+nid = sql("select id from notifications where type='maint_overdue' limit 1")
+r = adm.post('notifications/action.php', {'act': 'handle', 'id': nid}, 'notifications/'); t('تعليم إشعار كمعالج', sql(f"select handled_at is not null from notifications where id={nid}") == '1')
+nid2 = sql("select id from notifications where type='contract_end' limit 1"); before = int(sql("select count(*) from notifications where is_read=0 and (snoozed_until is null or snoozed_until<=now())"))
+adm.post('notifications/action.php', {'act': 'snooze', 'id': nid2, 'days': '3'}, 'notifications/')
+t('تأجيل إشعار يخفيه من العدد حتى الموعد', sql(f"select snoozed_until>now() from notifications where id={nid2}") == '1')
+t('الإشعار المؤجّل يظهر في عرض «المؤجَّلة» فقط', 'مؤجَّل حتى' in adm.get('notifications/?show=snoozed').text and 'مؤجَّل حتى' not in adm.get('notifications/?show=open').text)
+
+print('== واتساب اليدوي بموافقة المالك ==')
+iid = sql(f"select id from installments where contract_id={c1} and status='overdue' order by due_date limit 1")
+r = adm.get(f'messages/compose.php?kind=rent&id={iid}')
+t('صفحة المراجعة تعرض الرسالة العربية القابلة للتعديل', r.status_code == 200 and '<textarea' in r.text and 'أحمد علي' in r.text and 'السلام عليكم' in r.text)
+t('تحتوي الرسالة المبلغ المتبقي والعملة والفترة', '1,000.00 ج.س' in r.text and 'المبلغ المتبقي' in r.text and 'U1' in r.text)
+t('صفحة المراجعة لا تفتح واتساب ولا تضع رابطه', 'wa.me' not in r.text)
+t('لا سجل قبل الموافقة', sql("select count(*) from reminders") == '0')
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '55500', 'message': 'نص', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+t('مبلغ متبقٍ متغيّر → رفض وإعادة تجهيز بلا سجل موافقة', r.status_code == 302 and sql("select count(*) from reminders") == '0')
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': 'نص', 'phone': 'abc'}, f'messages/compose.php?kind=rent&id={iid}')
+t('رقم هاتف غير صالح مرفوض', sql("select count(*) from reminders") == '0')
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': '   ', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+t('رسالة فارغة مرفوضة', sql("select count(*) from reminders") == '0')
+r = C().s.post(BASE + '/messages/compose.php', data={'kind': 'rent', 'id': iid, 'message': 'x', 'phone': '0912345678'}, allow_redirects=False)
+t('بلا دخول: رفض', r.status_code == 302 and 'login' in r.headers['Location'])
+r = adm.s.post(BASE + '/messages/compose.php', data={'kind': 'rent', 'id': iid, 'message': 'x', 'phone': '0912345678', '_csrf': 'bad'}, allow_redirects=False)
+t('بلا CSRF صحيح: 419', r.status_code == 419)
+custom = 'السلام عليكم أستاذ أحمد، نذكّركم بسداد 1,000.00 ج.س المتبقي على الوحدة U1. شكراً\nمؤسسة الاختبار'
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': custom, 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+t('الموافقة تُسجَّل ثم صفحة المتابعة', r.status_code == 302 and 'messages/view.php?id=' in r.headers['Location']); rid = newid(r)
+row = sql(f"select status, phone, approved_by is not null, approved_at is not null, outcome_at is null, expected_remaining from reminders where id={rid}").split('\t')
+t('تسجيل الموافقة: حالة approved + المستخدم والتاريخ + هاتف دولي', row[0] == 'approved' and row[1] == '249912345678' and row[2] == '1' and row[3] == '1' and row[4] == '1' and row[5] == '1000.00', str(row))
+r = adm.get(f'messages/view.php?id={rid}')
+m = re.search(r'href="(https://wa\.me/(\d+)\?text=([^"]+))"', r.text)
+t('رابط واتساب موجود بعد الموافقة', bool(m))
+dec = urllib.parse.unquote(m.group(3)).replace('&amp;', '&') if m else ''
+t('نص الرابط = النص المعدَّل بالضبط (عربي سليم)', dec == custom, dec)
+t('رقم الرابط دولي بدون + أو صفر', m and m.group(2) == '249912345678')
+t('فتح الصفحة لا يسجّل «أُرسلت» تلقائياً', sql(f"select status from reminders where id={rid}") == 'approved' and 'فتح واتساب لا يعني' in r.text)
+adm.get(f'messages/view.php?id={rid}'); t('تكرار فتح الصفحة لا يغيّر الحالة', sql(f"select status from reminders where id={rid}") == 'approved')
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': 'ثانية', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+r2 = adm.get(f'messages/compose.php?kind=rent&id={iid}'); t('تحذير من تذكير مفتوح لم تُسجَّل نتيجته (تجنب التكرار)', 'لم تُسجَّل نتيجته' in r2.text)
+r = adm.post('messages/action.php', {'reminder_id': rid, 'act': 'sent', 'note': 'ردّ المستأجر'}, f'messages/view.php?id={rid}')
+t('تسجيل «أُرسلت» يدوياً بعد العودة', sql(f"select status, outcome_by is not null, outcome_note from reminders where id={rid}") == 'sent\t1\tردّ المستأجر')
+adm.post('messages/action.php', {'reminder_id': rid, 'act': 'not_sent'}, f'messages/view.php?id={rid}')
+t('لا يمكن تغيير نتيجة سُجّلت سابقاً', sql(f"select status from reminders where id={rid}") == 'sent')
+t('إشعار الاستحقاق عُلِّم معالجاً بعد تسجيل الإرسال', sql(f"select count(*) from notifications where link='payments/view.php?id={iid}' and handled_at is not null") == '1')
+rid2 = newid(adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': 'ثالثة', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}'))
+adm.post('messages/action.php', {'reminder_id': rid2, 'act': 'not_sent', 'note': 'لم أرسل'}, f'messages/view.php?id={rid2}')
+t('تسجيل «لم تُرسل»', sql(f"select status from reminders where id={rid2}") == 'not_sent')
+# دفعة جزئية ثم إعادة التحقق من المتبقي
+r = adm.post('payments/collect.php', {'installment_id': iid, 'amount': '400', 'paid_on': D(today), 'method_id': '1', '_idem': 'e' * 32}, f'payments/view.php?id={iid}')
+r = adm.get(f'messages/compose.php?kind=rent&id={iid}')
+ta = r.text.split('<textarea')[1].split('</textarea>')[0]
+t('بعد دفعة جزئية: الرسالة تحمل المتبقي الفعلي 600 والمدفوع 400 (لا 1000 كمتبقٍ)', 'المبلغ المتبقي: 600.00 ج.س' in ta and 'المدفوع حتى الآن: 400.00 ج.س' in ta and 'المبلغ المتبقي: 1,000.00' not in ta, ta)
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '100000', 'message': 'قديمة', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+t('محاولة إرسال بمبلغ قديم (1000) بعد الدفع الجزئي مرفوضة', int(sql(f"select count(*) from reminders where installment_id={iid} and message='قديمة'")) == 0)
+# سداد كامل → لا مطالبة
+adm.post('payments/collect.php', {'installment_id': iid, 'amount': '600', 'paid_on': D(today), 'method_id': '1', '_idem': 'f' * 32}, f'payments/view.php?id={iid}')
+r = adm.get(f'messages/compose.php?kind=rent&id={iid}'); t('استحقاق مسدد: لا مطالبة ويُمنع الإرسال', 'مسدد بالكامل' in r.text and 'disabled' in r.text)
+r = adm.post('messages/compose.php', {'kind': 'rent', 'id': iid, 'expected_cents': '0', 'message': 'مطالبة', 'phone': '0912345678'}, f'messages/compose.php?kind=rent&id={iid}')
+t('POST على استحقاق مسدد مرفوض', int(sql(f"select count(*) from reminders where message='مطالبة'")) == 0)
+# تأجيل وإلغاء
+od2 = sql(f"select id from installments where contract_id={c1} and status='overdue' order by due_date limit 1")
+adm.post('messages/action.php', {'kind': 'rent', 'id': od2, 'act': 'snooze', 'days': '3'}, f'messages/compose.php?kind=rent&id={od2}')
+t('تأجيل تذكير يُسجَّل ويؤجّل الإشعار', sql(f"select status, snooze_until>curdate() from reminders where installment_id={od2} order by id desc limit 1") == 'snoozed\t1' and sql(f"select snoozed_until>now() from notifications where link='payments/view.php?id={od2}' and type='rent_overdue'") == '1')
+adm.post('messages/action.php', {'kind': 'rent', 'id': od2, 'act': 'dismiss'}, f'messages/compose.php?kind=rent&id={od2}')
+t('إلغاء التذكير يُعالج الإشعار ويُسجَّل', sql(f"select status from reminders where installment_id={od2} order by id desc limit 1") == 'dismissed' and sql(f"select handled_at is not null from notifications where link='payments/view.php?id={od2}' and type='rent_overdue'") == '1')
+# أنواع أخرى
+r = adm.get(f'messages/compose.php?kind=contract&id={c3}'); t('رسالة عقد قريب الانتهاء', r.status_code == 200 and 'ينتهي بتاريخ' in r.text and 'مناقشة' in r.text)
+r = adm.get(f'messages/compose.php?kind=contract&id={c4}'); t('رسالة عقد منتهٍ', r.status_code == 200 and 'انتهى بتاريخ' in r.text)
+r = adm.get(f'messages/compose.php?kind=maintenance&id={mid}'); t('رسالة صيانة', r.status_code == 200 and 'عطل قديم' in r.text and 'الحالة الحالية' in r.text)
+pay = sql(f"select id from payments where installment_id={iid} and status='valid' limit 1")
+r = adm.get(f'messages/compose.php?kind=receipt&id={pay}'); t('رسالة إيصال مع تنبيه أن الملف لا يُرفق تلقائياً', r.status_code == 200 and 'RC-' in r.text and 'لا يرفق ملف الإيصال تلقائياً' in r.text)
+r = adm.get('messages/compose.php?kind=hack&id=1'); t('نوع غير معروف 404', r.status_code == 404)
+r = adm.get('messages/compose.php?kind=rent&id=99999'); t('سجل غير موجود 404', r.status_code == 404)
+r = adm.get('messages/'); t('سجل الرسائل يعمل', r.status_code == 200 and 'أُرسلت' in r.text)
+t('تسجيل الموافقات والنتائج في سجل التدقيق', all(x in adm.get('audit/').text for x in ['موافقة على إرسال رسالة', 'تسجيل: أُرسلت الرسالة', 'تأجيل تذكير']))
+t('سجل الإجراءات يظهر في صفحة الاستحقاق', 'سجل الإجراءات والرسائل' in adm.get(f'payments/view.php?id={iid}').text)
+
+print('== المستندات القابلة للطباعة ==')
+r = adm.get(f'payments/statement.php?id={iid}')
+t('كشف الاستحقاق: مبالغ وبيانات صحيحة', r.status_code == 200 and 'كشف استحقاق إيجار' in r.text and '1,000.00 ج.س' in r.text and 'أحمد علي' in r.text and 'U1' in r.text)
+t('كشف الاستحقاق: دفعات 400 و600 والمتبقي 0', '400.00' in r.text and '600.00' in r.text and '0.00 ج.س' in r.text)
+t('زر الطباعة/حفظ PDF ورسالة التوضيح (ليس مولّد PDF)', 'طباعة / حفظ كـ PDF' in r.text and 'حفظ كـ PDF' in r.text and 'window.print()' in r.text)
+t('كشف الاستحقاق يحمل رابط واتساب للمخوّل فقط عند وجود متبقٍ', 'messages/compose.php' not in r.text)
+r = adm.get(f'payments/statement.php?id={od2}'); t('كشف استحقاق غير مسدد فيه زر واتساب', 'messages/compose.php?kind=rent' in r.text)
+r = adm.get(f'payments/receipt.php?id={pay}'); t('الإيصال: طباعة + واتساب + بيانات', 'window.print()' in r.text and 'messages/compose.php?kind=receipt' in r.text and 'أحمد علي' in r.text and 'RC-' in r.text)
+r = adm.get(f'contracts/print.php?id={c1}'); t('العقد: معاينة طباعة + واتساب', r.status_code == 200 and 'window.print()' in r.text and 'messages/compose.php?kind=contract' in r.text and 'توقيع المؤجر' in r.text)
+r = adm.get(f'maintenance/print.php?id={mid}'); t('تقرير الصيانة قابل للطباعة', r.status_code == 200 and 'تقرير بلاغ صيانة' in r.text and 'عطل قديم' in r.text)
+for p in ['payments/statement.php?id=99999', 'maintenance/print.php?id=99999', 'payments/receipt.php?id=99999']:
+    t('مستند غير موجود 404: ' + p, adm.get(p).status_code == 404)
+
+print('== الصلاحيات ==')
+adm.post('users/form.php', {'full_name': 'موظف', 'username': 'staff2', 'role_id': 2, 'password': 'Staff12345'}, 'users/form.php')
+st = C(); st.post('auth/login.php', {'username': 'staff2', 'password': 'Staff12345'}, 'auth/login.php')
+for p in [f'messages/compose.php?kind=rent&id={od2}', 'messages/', f'messages/view.php?id={rid}']:
+    t('الموظف بلا messages.send: 403 على ' + p.split('?')[0], st.get(p).status_code == 403)
+r = st.post('messages/compose.php', {'kind': 'rent', 'id': od2, 'expected_cents': '100000', 'message': 'x', 'phone': '0912345678'}, 'payments/')
+t('الموظف: POST إرسال مرفوض 403', r.status_code == 403)
+r = st.post('messages/action.php', {'reminder_id': rid, 'act': 'sent'}, 'payments/'); t('الموظف لا يسجّل نتائج', r.status_code == 403)
+r = st.get(f'payments/view.php?id={od2}'); t('الموظف لا يرى زر واتساب ولا سجل الرسائل', 'messages/compose.php' not in r.text and 'سجل الإجراءات والرسائل' not in r.text)
+t('الموظف يصل لكشف الاستحقاق (payments.view)', st.get(f'payments/statement.php?id={od2}').status_code == 200)
+r = st.get('notifications/'); t('الموظف: إشعارات بلا أزرار تذكير', r.status_code == 200 and 'مراجعة وإرسال تذكير' not in r.text)
+r = st.get('dashboard/'); t('قائمة الموظف بلا «سجل الرسائل»', '/messages/' not in r.text)
+# منح الصلاحية لدور مخصص
+sql("insert ignore into role_permissions (role_id, perm_code) values (2,'messages.send')")
+t('بعد منح الصلاحية للدور يعمل الموظف', st.get(f'messages/compose.php?kind=rent&id={od2}').status_code == 200)
+sql("delete from role_permissions where role_id=2 and perm_code='messages.send'")
+
+print('== الترحيل ==')
+mig = open(ROOT + '/database/migrations/002_reminders_whatsapp.sql', encoding='utf-8').read().replace('`sakan_property_manager`', '`' + DB + '`')
+open('/tmp/_m.sql', 'w', encoding='utf-8').write(mig)
+before = sql("select (select count(*) from installments), (select count(*) from payments), (select count(*) from reminders)")
+ok = all(subprocess.run('mysql -uroot < /tmp/_m.sql', shell=True, capture_output=True).returncode == 0 for _ in range(2))
+t('الترحيل يعمل مرتين على قاعدة ببيانات دون خطأ', ok)
+t('الترحيل لا يغيّر البيانات الموجودة', sql("select (select count(*) from installments), (select count(*) from payments), (select count(*) from reminders)") == before)
+
+print('== ترقية قاعدة الإصدار 1 تلقائياً (جلسة قديمة تفتح الرابط) ==')
+rb = open(ROOT + '/database/migrations/002_rollback.sql', encoding='utf-8').read().replace('`sakan_property_manager`', '`' + DB + '`')
+open('/tmp/_rb.sql', 'w', encoding='utf-8').write(rb)
+before = sql("select (select count(*) from installments), (select count(*) from payments), (select count(*) from notifications), (select count(*) from users)")
+subprocess.run('mysql -uroot < /tmp/_rb.sql', shell=True, check=True)
+t('بعد التراجع: القاعدة تشبه الإصدار 1 (لا جدول reminders)', sql("select count(*) from information_schema.tables where table_schema=database() and table_name='reminders'") == '0')
+r = adm.get('', follow=True)
+t('الجذر بجلسة قديمة يفتح لوحة التحكم بلا «خطأ غير متوقع»', r.status_code == 200 and 'غير متوقع' not in r.text and 'لوحة التحكم' in r.text, str(r.status_code))
+t('تمت الترقية تلقائياً: schema_version=2 وجدول reminders موجود', sql("select svalue from settings where skey='schema_version'") == '2' and sql("select count(*) from information_schema.tables where table_schema=database() and table_name='reminders'") == '1')
+t('الترقية لم تغيّر أي بيانات موجودة', sql("select (select count(*) from installments), (select count(*) from payments), (select count(*) from notifications), (select count(*) from users)") == before)
+t('الصفحات الجديدة تعمل بعد الترقية', all(adm.get(p).status_code == 200 for p in ['notifications/', 'messages/', 'dashboard/']))
+t('زائر جديد (نافذة خاصة) يرى صفحة الدخول', 'تسجيل الدخول' in C().get('', follow=True).text)
+
+print(f'\n==== النتيجة: نجح {passed} — فشل {failed} ====')
+sys.exit(1 if failed else 0)

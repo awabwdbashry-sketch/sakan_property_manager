@@ -1,0 +1,11 @@
+@page { size: A4; margin: 14mm; }
+body { background: #fff !important; font-size: 12.5pt; }
+.sidebar, .topbar, .foot, .scrim, .page-actions, .filters, .pager, .no-print, .modal, .lightbox, .tabs, .alert-x { display: none !important; }
+.main, .content { display: block; padding: 0 !important; max-width: none !important; }
+.card, .doc-sheet { box-shadow: none !important; border: 0 !important; padding: 0 !important; break-inside: avoid; }
+.doc-sheet { max-width: none; }
+.tbl th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.badge { border: 1px solid #999; background: none !important; color: #000 !important; }
+.stat { box-shadow: none; break-inside: avoid; }
+a { color: #000; text-decoration: none; }
+.table-wrap { overflow: visible; }

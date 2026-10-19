@@ -1,0 +1,10 @@
+# حماية عامة لمشروع سَكَن على Apache (WAMP)
+Options -Indexes
+DirectoryIndex index.php
+ErrorDocument 403 /sakan_property_manager/404.php
+ErrorDocument 404 /sakan_property_manager/404.php
+<FilesMatch "\.(sql|md|log|ini|sh|bak|env)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</FilesMatch>

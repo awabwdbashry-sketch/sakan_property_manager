@@ -1,0 +1,44 @@
+﻿# Local configuration and secrets
+/config/local.php
+.env
+.env.*
+!.env.example
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Logs
+/storage/logs/*
+!/storage/logs/.htaccess
+!/storage/logs/index.php
+!/storage/logs/.gitkeep
+*.log
+
+# Private uploads
+/storage/uploads/*
+!/storage/uploads/.htaccess
+!/storage/uploads/index.php
+!/storage/uploads/.gitkeep
+
+# Backups
+/storage/backups/*
+!/storage/backups/.htaccess
+!/storage/backups/index.php
+!/storage/backups/.gitkeep
+/backups/
+/backup/
+*.sql.gz
+*.dump
+*.bak
+
+# Temporary and editor files
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
