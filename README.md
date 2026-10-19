@@ -1,263 +1,189 @@
-# 🏢 سَكَن | SAKAN Property Manager
+# سَكَن | SAKAN Property Manager
 
-<div align="center">
+<p align="center">
+  <strong>نظام متكامل لإدارة العقارات والإيجارات والتحصيلات المالية</strong>
+</p>
 
-<img src="https://readme-typing-svg.demolab.com?font=Cairo&weight=700&size=30&duration=3000&pause=1000&color=C96F50&center=true&vCenter=true&width=700&lines=%D8%B3%D9%8E%D9%83%D9%8E%D9%86+%7C+SAKAN+Property+Manager;Smart+Real+Estate+Management;Built+with+%E2%9D%A4%EF%B8%8F+by+AwabBuilds" alt="SAKAN Property Manager" />
+<p align="center">
+  <a href="#النسخة-العربية">العربية</a> |
+  <a href="#english-version">English</a>
+</p>
 
-**نظام متكامل لإدارة العقارات والوحدات والإيجارات والتحصيلات من مكان واحد.**
-
-*A comprehensive property management system for properties, units, leases, rent collection, and financial tracking.*
-
-[![PHP](https://img.shields.io/badge/PHP-8%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![PDO](https://img.shields.io/badge/PDO-Database_Access-59666C?style=for-the-badge)](https://www.php.net/manual/en/book.pdo.php)
-[![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-
-[📂 GitHub Repository](https://github.com/awabwdbashry-sketch/sakan_property_manager) · [👨‍💻 Developer](https://github.com/awabwdbashry-sketch)
-
-</div>
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
+  <img src="https://img.shields.io/badge/MySQL-MariaDB-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/Interface-Arabic%20RTL-2E7D32?style=for-the-badge" alt="Arabic RTL">
+  <img src="https://img.shields.io/badge/Architecture-PDO-59666C?style=for-the-badge" alt="PDO">
+</p>
 
 ---
 
-## 🇸🇩 نبذة عن المشروع | About the Project
+# النسخة العربية
 
-**سَكَن | SAKAN Property Manager** هو نظام ويب لإدارة العقارات، صُمّم لمساعدة مالك العقار على تنظيم ممتلكاته ومتابعة الوحدات والمستأجرين والعقود والاستحقاقات المالية من خلال لوحة تحكم واحدة.
+## نبذة عن المشروع
 
-يهدف النظام إلى تقليل الفوضى في إدارة العقارات، وتحسين متابعة الإيجارات والمدفوعات والمصروفات والصيانة، وتوفير بيانات منظمة تساعد على اتخاذ قرارات أفضل.
+**سَكَن | SAKAN Property Manager** هو نظام ويب لإدارة العقارات والوحدات السكنية وعقود الإيجار والمستأجرين والتحصيلات المالية من خلال لوحة تحكم عربية متكاملة.
 
-### 🎯 أهداف المشروع
+يهدف النظام إلى تنظيم العمليات اليومية لمالك العقار، ومتابعة الاستحقاقات المالية، وتوثيق الدفعات والمصروفات، وإدارة طلبات الصيانة، مع توفير التقارير والإشعارات اللازمة لتسهيل متابعة العقارات.
 
-- 🏢 تنظيم العقارات والمباني والوحدات.
-- 👥 إدارة بيانات المستأجرين والعقود.
-- 📅 متابعة استحقاقات الإيجار ومواعيد السداد.
-- 💰 تسجيل التحصيلات والمدفوعات والمصروفات.
-- 🧾 إصدار الإيصالات ومراجعة السجلات المالية.
-- 🔔 التنبيه بشأن الإيجارات المتأخرة والمهام المهمة.
-- 📲 تسهيل متابعة المستأجرين عبر تذكيرات واتساب بموافقة المسؤول.
-- 🛠️ تنظيم بلاغات الصيانة ومتابعة حالتها.
+صُمم النظام ليديره مالك العقار أو الموظفون المصرح لهم، دون الحاجة إلى حسابات دخول للمستأجرين.
 
-### 🇬🇧 English Overview
+## المميزات الرئيسية
 
-**SAKAN Property Manager** is a web-based property management system designed to help property owners organize their real estate operations through a centralized dashboard.
+- **إدارة العقارات والمباني:** تنظيم العقارات ومعلوماتها الأساسية.
+- **إدارة الوحدات:** متابعة الوحدات السكنية وحالاتها.
+- **إدارة المستأجرين:** حفظ بيانات المستأجرين وربطها بالعقود.
+- **إدارة عقود الإيجار:** تسجيل العقود ومددها وقيمها وتفاصيلها.
+- **استحقاقات الإيجار:** متابعة مواعيد الاستحقاق والمبالغ المتأخرة.
+- **التحصيلات المالية:** تسجيل الدفعات ومتابعة المبالغ المدفوعة والمتبقية.
+- **الإيصالات:** توثيق عمليات الدفع والرجوع إليها.
+- **إدارة المصروفات:** تنظيم المصروفات العقارية ومتابعة تكاليف التشغيل.
+- **الصيانة والبلاغات:** تسجيل طلبات الصيانة ومتابعة حالاتها.
+- **التنبيهات:** متابعة الاستحقاقات والتنبيهات المرتبطة بالعمليات.
+- **التذكير عبر واتساب:** تجهيز رسالة تذكير للمستأجر المتأخر، مع اشتراط مراجعة المسؤول وتأكيده قبل فتح واتساب وإرسال الرسالة.
+- **التقارير:** استخراج التقارير بصيغة CSV حيثما كانت مدعومة.
+- **المستخدمون والصلاحيات:** تنظيم وصول المسؤولين والموظفين وفق الصلاحيات.
+- **سجل التدقيق:** توثيق العمليات المهمة للمساعدة في المراجعة والمتابعة.
+- **النسخ الاحتياطي:** دعم إجراءات النسخ الاحتياطي وفق إعدادات الخادم.
 
-The system brings together property and unit management, tenant records, lease agreements, rent installments, payment collection, receipts, expenses, maintenance requests, notifications, and financial reporting.
+## التقنيات المستخدمة
 
-Its goal is to make property management more organized, improve visibility into rental obligations, and simplify day-to-day administrative tasks.
-
----
-
-## ✨ المميزات الرئيسية | Key Features
-
-| الميزة | Feature |
+| التقنية | الاستخدام |
 |---|---|
-| 🏢 إدارة العقارات والمباني | Property and building management |
-| 🚪 إدارة الوحدات العقارية | Rental unit management |
-| 👥 إدارة المستأجرين | Tenant records management |
-| 📑 إدارة العقود | Lease and contract management |
-| 📆 استحقاقات الإيجار | Rent installment tracking |
-| 💵 التحصيل والمدفوعات | Payment collection and tracking |
-| 🧾 الإيصالات والسجلات المالية | Receipts and financial records |
-| ⏰ متابعة الإيجارات المتأخرة | Overdue rent monitoring |
-| 📲 تذكيرات واتساب يدوية | User-confirmed WhatsApp reminders |
-| 🛠️ بلاغات الصيانة | Maintenance request management |
-| 🧮 إدارة المصروفات | Expense management |
-| 🔔 الإشعارات والتنبيهات | Notifications and alerts |
-| 📊 التقارير وتصدير البيانات | Reports and data export |
-| 👤 المستخدمون والصلاحيات | User and permission management |
-| 📝 سجل التدقيق | Audit logging |
-| 💾 النسخ الاحتياطي | Backup utilities |
+| PHP 8+ | منطق النظام ومعالجة العمليات |
+| MySQL / MariaDB | تخزين البيانات وإدارتها |
+| PDO | الاتصال بقاعدة البيانات والاستعلامات |
+| HTML5 | بناء صفحات النظام |
+| CSS3 | التصميم والتنسيق والاستجابة للشاشات |
+| JavaScript | التفاعلات داخل الواجهة |
+| Apache / WAMP | بيئة التشغيل المحلية |
+| phpMyAdmin | إدارة قاعدة البيانات واستيراد ملفات SQL |
 
-### 📲 تذكيرات واتساب | WhatsApp Reminders
+## متطلبات التشغيل
 
-يدعم النظام سير عمل للتذكير بالمبالغ المتأخرة، بحيث يتمكن المسؤول من مراجعة الرسالة وتعديلها قبل فتح واتساب وإرسالها بنفسه.
+- Windows أو بيئة خادم تدعم PHP وMySQL.
+- WAMP أو Apache مع PHP 8 أو أحدث.
+- MySQL أو MariaDB.
+- تفعيل امتداد `pdo_mysql`.
+- متصفح ويب حديث.
 
-The WhatsApp reminder workflow is designed to keep the property owner in control: the responsible user reviews and approves the reminder before WhatsApp opens for manual sending.
+## طريقة التثبيت
 
-**مهم:** لا يعتمد هذا المسار على إرسال رسائل واتساب تلقائياً دون موافقة المسؤول.
+1. نزّل المشروع أو استنسخ المستودع إلى جهازك.
+2. ضع مجلد المشروع داخل مجلد `www` في WAMP.
+3. أنشئ قاعدة بيانات باسم `sakan_property_manager` أو استخدم الاسم المحدد في إعدادات المشروع.
+4. استورد ملف قاعدة البيانات `database/schema.sql` باستخدام phpMyAdmin.
+5. راجع إعدادات الاتصال بقاعدة البيانات في ملفات الإعدادات المحلية، واستخدم `config/local.php` إذا كان المشروع يعتمد عليه.
+6. شغّل خادم Apache وMySQL من WAMP.
+7. افتح صفحة الإعداد الأولي:
 
----
+   `http://localhost/sakan_property_manager/setup/`
 
-## 🛠️ التقنيات المستخدمة | Technologies Used
+8. أكمل إعداد النظام وأنشئ حساب المسؤول الأول وفق تعليمات صفحة الإعداد.
+9. تأكد من ضبط صلاحيات المجلدات وإعدادات رفع الملفات والنسخ الاحتياطي قبل الاستخدام الفعلي.
 
-- **PHP 8+** — Backend development.
-- **MySQL / MariaDB** — Relational database management.
-- **PDO** — Database connectivity and prepared statements.
-- **HTML5** — Page structure.
-- **CSS3** — Responsive interface and styling.
-- **JavaScript** — Client-side interactions.
-- **Apache** — Local web server through WAMP.
-- **phpMyAdmin** — Database administration.
-- **Git & GitHub** — Version control and project hosting.
+> **ملاحظة:** قد تختلف بعض الخطوات بحسب إعدادات جهازك ونسخة المشروع. راجع ملفات التوثيق وإعدادات المشروع قبل تشغيله على خادم إنتاجي.
 
----
+## الأمان وحماية البيانات
 
-## 🎨 واجهة المستخدم | User Interface
+يراعي تصميم النظام ممارسات أمنية مهمة، منها استخدام الاستعلامات المجهزة عبر PDO، وإدارة كلمات المرور بصورة آمنة، والتحقق من المدخلات والصلاحيات، وحماية النماذج من طلبات CSRF، والحد من مخاطر حقن SQL وXSS.
 
-تم تصميم النظام بهوية بصرية دافئة تجمع بين الفخامة والوضوح، مع ألوان مستوحاة من العقارات والتصميم المعماري.
+يُنصح بمراجعة إعدادات الخادم والنسخ الاحتياطي وصلاحيات الملفات قبل استخدام النظام مع بيانات عقارية ومالية حقيقية.
 
-The interface follows a warm, refined visual identity inspired by architectural and real estate design.
+## المطوّر
 
-- 🎨 ألوان هادئة مستوحاة من العاجي والألوان الترابية.
-- 📱 تصميم متجاوب مع أحجام الشاشات المختلفة.
-- 🧭 تنظيم واضح للأقسام والبيانات.
-- 🇸🇩 واجهة عربية تدعم اتجاه الكتابة من اليمين إلى اليسار (RTL).
+**أواب باشري | Awab Bashery**  
+العلامة البرمجية: **AwabBuilds**
+
+GitHub: [awabwdbashry-sketch](https://github.com/awabwdbashry-sketch)
+
+مستودع المشروع: [sakan_property_manager](https://github.com/awabwdbashry-sketch/sakan_property_manager)
 
 ---
 
-## 🗂️ هيكل المشروع | Project Structure
+# English Version
 
-الهيكل التالي يوضّح التنظيم العام للمشروع؛ قد تختلف بعض الأسماء بحسب الملفات الموجودة في الإصدار الفعلي.
+## Project Overview
 
-```text
-sakan_property_manager/
-│
-├── assets/          # CSS, JavaScript and static assets
-├── config/          # Application configuration
-├── cron/            # Scheduled maintenance tasks
-├── database/        # Database schema and SQL files
-├── includes/        # Shared PHP components
-├── modules/         # Application modules
-├── setup/           # Initial system setup
-├── storage/         # Application storage
-├── tests/           # Automated tests
-├── uploads/         # Uploaded files
-│
-├── index.php        # Application entry point
-├── login.php        # Authentication
-├── logout.php       # Logout
-├── .htaccess        # Apache configuration
-├── .gitignore       # Git exclusions
-└── README.md        # Project documentation
-```
+**SAKAN Property Manager** is a web-based property management system designed to organize properties, residential units, tenants, rental contracts, rent installments, payments, expenses, and maintenance operations through an Arabic right-to-left interface.
 
----
+The system is intended for a property owner and authorized staff to manage daily operations, monitor rental obligations, document financial transactions, and follow up on maintenance requests from one centralized dashboard.
 
-## ⚙️ التثبيت والتشغيل | Installation & Setup
+It is designed for a single property management entity and does not require tenant login accounts.
 
-### المتطلبات | Requirements
+## Key Features
 
-- Windows with WAMP Server.
-- PHP 8.0 or later, compatible with the project configuration.
+- **Property Management:** Organize properties and buildings.
+- **Unit Management:** Maintain unit information and occupancy status.
+- **Tenant Management:** Store tenant records and associate them with rental contracts.
+- **Rental Contracts:** Manage lease details, durations, and rental values.
+- **Rent Installments:** Track due dates, outstanding balances, and overdue rent.
+- **Payment Collection:** Record payments and monitor paid and remaining amounts.
+- **Receipts:** Maintain records of payment transactions.
+- **Expense Management:** Organize property-related expenses.
+- **Maintenance Requests:** Record maintenance issues and track their status.
+- **Notifications:** Follow up on relevant rental and operational events.
+- **WhatsApp Reminders:** Prepare overdue-rent reminder messages for review. An authorized user must confirm before WhatsApp is opened and the message is sent; messages are not sent automatically.
+- **Reports:** Export supported reports in CSV format.
+- **User Roles and Permissions:** Control access for administrators and authorized staff.
+- **Audit Logs:** Maintain records of important system activities.
+- **Backups:** Support backup procedures subject to server configuration.
+
+## Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| PHP 8+ | Application logic and server-side processing |
+| MySQL / MariaDB | Relational database management |
+| PDO | Database connectivity and prepared statements |
+| HTML5 | Page structure |
+| CSS3 | Styling and responsive layouts |
+| JavaScript | Client-side interactions |
+| Apache / WAMP | Local development environment |
+| phpMyAdmin | Database administration and SQL imports |
+
+## System Requirements
+
+- Windows or a server environment supporting PHP and MySQL.
+- WAMP or Apache with PHP 8 or later.
 - MySQL or MariaDB.
-- PHP PDO and the appropriate database driver enabled.
-- Apache web server.
-- phpMyAdmin for importing the database.
+- The `pdo_mysql` PHP extension enabled.
+- A modern web browser.
 
-### 1. تنزيل المشروع | Clone the Repository
+## Installation
 
-```bash
-git clone https://github.com/awabwdbashry-sketch/sakan_property_manager.git
-```
+1. Download or clone the project repository.
+2. Place the project directory inside the WAMP `www` directory.
+3. Create a database named `sakan_property_manager`, or use the database name specified by the project configuration.
+4. Import `database/schema.sql` through phpMyAdmin.
+5. Review the database connection settings and configure the local settings file, such as `config/local.php`, if required by the project.
+6. Start Apache and MySQL from WAMP.
+7. Open the setup page:
 
-ضع المشروع داخل مجلد `www` في WAMP.
+   `http://localhost/sakan_property_manager/setup/`
 
-Move the project into your WAMP `www` directory.
+8. Complete the initial setup and create the first administrator account as instructed by the setup page.
+9. Configure file permissions, upload limits, and backup settings before production use.
 
-### 2. إعداد قاعدة البيانات | Database Setup
+> **Note:** Installation details may vary depending on the project version and local environment. Review the included documentation and configuration files before deployment.
 
-1. شغّل خدمات Apache وMySQL من WAMP.
-2. افتح phpMyAdmin.
-3. أنشئ قاعدة البيانات المطلوبة أو استورد ملف SQL المرفق مع المشروع.
-4. تأكد من استخدام الترميز `utf8mb4` لدعم اللغة العربية.
+## Security Considerations
 
-1. Start Apache and MySQL in WAMP.
-2. Open phpMyAdmin.
-3. Create the required database or import the project's SQL schema.
-4. Ensure that `utf8mb4` is configured for Arabic text support.
+The system follows important security practices, including PDO prepared statements, secure password handling, input and permission validation, CSRF protection, and measures against SQL injection and cross-site scripting (XSS).
 
-### 3. إعداد الاتصال | Database Configuration
+Before using the system with real property or financial data, review the server configuration, file permissions, backup procedures, and deployment security.
 
-راجع ملفات الإعداد الموجودة داخل `config/`، واستخدم إعدادات البيئة المحلية لتحديد بيانات اتصال قاعدة البيانات.
+## Developer
 
-Review the configuration files inside `config/` and configure the database connection for your local environment.
+**Awab Bashery | أواب باشري**  
+Developer Brand: **AwabBuilds**
 
-**لا ترفع بيانات الاتصال الحقيقية أو كلمات المرور إلى GitHub.**
+GitHub Profile: [awabwdbashry-sketch](https://github.com/awabwdbashry-sketch)
 
-**Never commit real database credentials or passwords to GitHub.**
-
-### 4. تهيئة النظام | Initial Setup
-
-افتح صفحة التهيئة الموجودة في المشروع باستخدام عنوان localhost المناسب، واتبع خطوات إعداد النظام وإنشاء حساب المسؤول الأول.
-
-Open the project's setup page using the appropriate localhost URL and follow the initial setup process to create the first administrator account.
-
-### 5. تشغيل النظام | Run the Application
-
-افتح عنوان المشروع المحلي في المتصفح بعد إكمال إعداد قاعدة البيانات والنظام.
-
-Open the project's local URL in your browser after completing the database and application setup.
-
-> ملاحظة: أسماء ملفات قاعدة البيانات ومسارات التهيئة وعناوين التشغيل يجب التأكد منها من النسخة الفعلية للمشروع قبل اعتماد هذه الخطوات نهائياً.
+Project Repository: [sakan_property_manager](https://github.com/awabwdbashry-sketch/sakan_property_manager)
 
 ---
 
-## 🔐 الأمان | Security
-
-يركّز المشروع على تطبيق ممارسات أمنية مناسبة لتطبيقات PHP وقواعد البيانات، بحسب تنفيذ كل جزء من النظام.
-
-The project follows security-oriented development practices, including:
-
-- 🔒 حماية كلمات المرور باستخدام آليات التجزئة الآمنة.
-- 🛡️ استخدام PDO والاستعلامات المجهزة للحد من مخاطر SQL Injection.
-- 🔑 إدارة جلسات تسجيل الدخول والصلاحيات.
-- 🧹 التحقق من المدخلات ومخرجات البيانات.
-- 📝 تسجيل العمليات المهمة عند توفرها في الوحدات المعنية.
-- 📁 التحقق من الملفات المرفوعة وقيود الوصول إليها.
-- 🚫 استبعاد ملفات الإعدادات الحساسة والملفات المحلية من Git.
-
----
-
-## 🧪 الاختبارات | Testing
-
-يحتوي المشروع على مجلد مخصص للاختبارات.
-
-The project includes a dedicated testing directory.
-
-قبل الاعتماد على أي نتائج اختبار، شغّل الاختبارات المتاحة على نسختك الحالية من المشروع وتحقق من نجاحها في بيئة التشغيل المستهدفة.
-
-Run the available test suite against your current project version and verify the results in the intended deployment environment.
-
----
-
-## 🚀 التطوير المستقبلي | Future Improvements
-
-- 📈 تطوير تقارير مالية أكثر تفصيلاً.
-- 📊 تحسين التحليلات ومؤشرات الأداء.
-- 🔔 توسيع خيارات التنبيهات والتذكيرات.
-- 🧾 تطوير أدوات تصدير التقارير.
-- 🛠️ تحسين متابعة الصيانة وسجل الأعمال.
-
----
-
-## 👨‍💻 المطوّر | Developer
-
-<div align="center">
-
-### Awab Ibrahim Bashery Osman
-
-**أواب باشري | AwabBuilds**
-
-Software Developer · Web Development · PHP & MySQL
-
-أطوّر حلول ويب عملية تهدف إلى تنظيم الأعمال وتسهيل الإجراءات اليومية، مع التركيز على تجربة المستخدم، جودة التنفيذ، وقابلية الصيانة.
-
-*Building practical web solutions focused on usability, organization, and maintainable code.*
-
-[![GitHub](https://img.shields.io/badge/GitHub-awabwdbashry--sketch-181717?style=for-the-badge&logo=github)](https://github.com/awabwdbashry-sketch)
-[![Repository](https://img.shields.io/badge/Project-SAKAN-C96F50?style=for-the-badge&logo=github)](https://github.com/awabwdbashry-sketch/sakan_property_manager)
-
-</div>
-
----
-
-<div align="center">
-
-**صُنع بشغف ❤️ بواسطة أواب باشري | Built with ❤️ by AwabBuilds**
-
-⭐ إذا أعجبك المشروع، يمكنك دعمه بإضافة نجمة إلى المستودع.
-
-⭐ If you find this project useful, consider giving the repository a star.
-
-</div>
+<p align="center">
+  <strong>SAKAN Property Manager — Built by AwabBuilds</strong>
+</p>
